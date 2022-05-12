@@ -10,6 +10,8 @@ ext {
     fragment_version="1.4.1"
     nav_version = "2.4.2"
     retrofit_version="2.9.0"
+    timber_version="5.0.1"
+    moshi_version="1.13.0"
 }
 task clean(type: Delete) {
     delete rootProject.buildDir
