@@ -1,8 +1,10 @@
 package com.sega.weatherreport.data.repository
 
-import com.sega.weatherreport.data.remote.api.WeatherApi
+
+import com.sega.weatherreport.data.local.WeatherDatabase
 import com.sega.weatherreport.data.remote.api.WeatherApiService
 import com.sega.weatherreport.data.remote.mapper.toWeatherInfo
+import com.sega.weatherreport.data.remote.mapper.toWeatherInfoEntity
 import com.sega.weatherreport.domain.model.WeatherInfo
 import com.sega.weatherreport.util.Resource
 import kotlinx.coroutines.Dispatchers
@@ -13,13 +15,24 @@ import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import timber.log.Timber
 import java.io.IOException
+import javax.inject.Inject
 
 
-class FetchWeatherRepository {
-
+class FetchWeatherRepository @Inject constructor(
+    private val retrofitService: WeatherApiService,
+    private val waitingMessageList: MutableList<String>,
+    private val db: WeatherDatabase
+) {
+    private val dao = db.dao
     suspend fun getWeather(): Flow<Resource<WeatherInfo>> {
         return flow {
             val totalSeconds = 60
+            val localWeatherInfos = dao.getAll()
+            val isDbEmpty = localWeatherInfos.isEmpty()
+            Timber.i("Db action isDbEmpty $isDbEmpty")
+            if (!isDbEmpty) {
+                dao.deleteAll()
+            }
             for (i in 0..totalSeconds step 10) {
                 when (i) {
                     10 -> {
@@ -71,7 +84,11 @@ class FetchWeatherRepository {
         return flow {
             try {
                 val weatherInfoDto =
-                    WeatherApi.retrofitService.getWeatherInfos(cityName)
+                    retrofitService.getWeatherInfos(cityName)
+                Timber.i("Db action start inserting weather")
+                val weathetInfoEntity = weatherInfoDto.toWeatherInfoEntity()
+                dao.insertWeatherInfos(weathetInfoEntity)
+                Timber.i("Db action end inserting weather")
                 val weathetInfo = weatherInfoDto.toWeatherInfo()
                 emit(Resource.Success(weathetInfo))
 
@@ -89,11 +106,6 @@ class FetchWeatherRepository {
     }
 
     suspend fun waitingMessage(): Flow<String> {
-        val waitingMessageList = mutableListOf(
-            "Nous téléchargeons les données…",
-            "C’est presque fini…",
-            "Plus que quelques secondes avant d’avoir le résultat…"
-        )
         var previousMessageDisplayed = ""
         return flow {
             while (true) {

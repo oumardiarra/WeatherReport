@@ -4,24 +4,31 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sega.weatherreport.data.repository.FetchWeatherRepository
 import com.sega.weatherreport.util.Resource
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
 
-class FetchWeatherViewModel : ViewModel() {
-    val repository = FetchWeatherRepository()
+@HiltViewModel
+class FetchWeatherViewModel @Inject constructor(
+    private val repository: FetchWeatherRepository
+): ViewModel() {
+
     private val _progressIndicator = MutableStateFlow(0)
+    private val _waitingMessage = MutableStateFlow("")
     val progressIndicator = _progressIndicator
+    val waitingMessage = _waitingMessage
 
     init {
         getWaintingMessage()
     }
 
     fun fetchCurrentWeather() {
-
+        getWaintingMessage()
         viewModelScope.launch {
             repository.getWeather()
                 .flowOn(Dispatchers.IO)
@@ -52,7 +59,7 @@ class FetchWeatherViewModel : ViewModel() {
             repository
                 .waitingMessage()
                 .collect {
-                    Timber.i("Wainting message is ${it}")
+                    _waitingMessage.value = it
                 }
         }
     }

@@ -9,17 +9,9 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-const val BASE_URL = "https://api.openweathermap.org/data/2.5/"
-const val API_KEY = BuildConfig.WEATHER_API_KEY
 
 
-private val moshi = Moshi.Builder()
-    .addLast(KotlinJsonAdapterFactory())
-    .build()
-val retrofit = Retrofit.Builder()
-    .baseUrl(BASE_URL)
-    .addConverterFactory(MoshiConverterFactory.create(moshi))
-    .build()
+
 
 interface WeatherApiService {
     @GET("weather")
@@ -28,11 +20,9 @@ interface WeatherApiService {
         @Query("APPID") apiKey: String = API_KEY
     ): WeatherInfoDto
 
-
+companion object{
+    const val BASE_URL = "https://api.openweathermap.org/data/2.5/"
+    const val API_KEY = BuildConfig.WEATHER_API_KEY
+}
 }
 
-object WeatherApi {
-    val retrofitService: WeatherApiService by lazy {
-        retrofit.create(WeatherApiService::class.java)
-    }
-}

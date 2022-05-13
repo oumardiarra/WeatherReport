@@ -7,14 +7,17 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.sega.weatherreport.R
 import com.sega.weatherreport.databinding.FragmentFetchWeatherBinding
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
-
+@AndroidEntryPoint
 class FetchWeatherFragment : Fragment() {
 
     var _binding: FragmentFetchWeatherBinding? = null
@@ -31,16 +34,26 @@ class FetchWeatherFragment : Fragment() {
 
         lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.progressIndicator.collect {
-                    binding.linearProgressIndicator.progress = it
+                launch {
+                    viewModel.progressIndicator.collect {
+                        binding.linearProgressIndicator.progress = it
+                    }
                 }
+                launch {
+                    viewModel.waitingMessage.collect {
+                        Timber.i("Waiting message collect called $it")
+                        if (it.isNotEmpty()) {
+                            binding.waitingMessage.text = it
+                        }
+                    }
+                }
+
+
             }
         }
+        viewModel.fetchCurrentWeather()
 
-        // Inflate the layout for this fragment
-        binding.btnTest.setOnClickListener {
-            viewModel.fetchCurrentWeather()
-        }
+
         return root
     }
 
