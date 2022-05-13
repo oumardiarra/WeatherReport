@@ -12,6 +12,7 @@ ext {
     retrofit_version="2.9.0"
     timber_version="5.0.1"
     moshi_version="1.13.0"
+    lifecycle_version="2.4.1"
 }
 task clean(type: Delete) {
     delete rootProject.buildDir
