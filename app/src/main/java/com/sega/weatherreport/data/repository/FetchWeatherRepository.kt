@@ -2,6 +2,7 @@ package com.sega.weatherreport.data.repository
 
 
 import com.sega.weatherreport.data.local.WeatherDatabase
+import com.sega.weatherreport.data.local.mapper.toListOfWeatherInfo
 import com.sega.weatherreport.data.remote.api.WeatherApiService
 import com.sega.weatherreport.data.remote.mapper.toWeatherInfo
 import com.sega.weatherreport.data.remote.mapper.toWeatherInfoEntity
@@ -24,51 +25,65 @@ class FetchWeatherRepository @Inject constructor(
     private val db: WeatherDatabase
 ) {
     private val dao = db.dao
-    suspend fun getWeather(): Flow<Resource<WeatherInfo>> {
+    suspend fun getWeather(): Flow<Resource<List<WeatherInfo>>> {
         return flow {
             val totalSeconds = 60
             val localWeatherInfos = dao.getAll()
             val isDbEmpty = localWeatherInfos.isEmpty()
-            Timber.i("Db action isDbEmpty $isDbEmpty")
+            Timber.i("Db action isDbEmpty $isDbEmpty size is ${localWeatherInfos.size}")
             if (!isDbEmpty) {
                 dao.deleteAll()
             }
             for (i in 0..totalSeconds step 10) {
                 when (i) {
-                    10 -> {
-                        Timber.i("counter tick is $i and city is paris")
+                    0 -> {
+                        Timber.i("counter tick is $i and city is Paris")
                         val progress = getProgresspercentage(i, totalSeconds)
                         emit(Resource.Progress(progress))
-                        val parisInfo = fetchInfos("Paris")
-                        emitAll(parisInfo)
+                        fetchInfos("Paris")
                     }
-                    20 -> {
+                    10 -> {
+
                         Timber.i("counter tick is $i and city is Rennes")
                         val progress = getProgresspercentage(i, totalSeconds)
                         emit(Resource.Progress(progress))
-                        val rennesInfos = fetchInfos("Rennes")
-                        emitAll(rennesInfos)
+                        fetchInfos("Rennes")
+
                     }
-                    30 -> {
+                    20 -> {
+
                         Timber.i("counter tick is $i and city is Nantes")
                         val progress = getProgresspercentage(i, totalSeconds)
                         emit(Resource.Progress(progress))
-                        val nantesInfo = fetchInfos("Nantes")
-                        emitAll(nantesInfo)
+                        fetchInfos("Nantes")
                     }
-                    40 -> {
+                    30 -> {
                         Timber.i("counter tick is $i and city is Bordeaux")
                         val progress = getProgresspercentage(i, totalSeconds)
                         emit(Resource.Progress(progress))
-                        val bordeauxInfos = fetchInfos("Bordeaux")
-                        emitAll(bordeauxInfos)
+                        fetchInfos("Bordeaux")
+
                     }
-                    50 -> {
+                    40 -> {
                         Timber.i("counter tick is $i and city is Lyon")
                         val progress = getProgresspercentage(i, totalSeconds)
                         emit(Resource.Progress(progress))
-                        val lyonInfos = fetchInfos("Lyon")
-                        emitAll(lyonInfos)
+                        fetchInfos("Lyon")
+
+                    }
+                    50 -> {
+                        val progress = getProgresspercentage(i, totalSeconds)
+                        emit(Resource.Progress(progress))
+
+                    }
+                    60 -> {
+                        val localWeatherList = dao.getAll()
+                        val progress = getProgresspercentage(i, totalSeconds)
+                        emit(Resource.Progress(progress))
+                        localWeatherList?.let {
+                            emit(Resource.Success(localWeatherInfos.toListOfWeatherInfo()))
+                        }
+
                     }
 
                 }
@@ -80,9 +95,11 @@ class FetchWeatherRepository @Inject constructor(
 
     }
 
-    private suspend fun fetchInfos(cityName: String): Flow<Resource<WeatherInfo>> {
-        return flow {
+    private suspend fun fetchInfos(cityName: String) {
+        Timber.i("Db action fetchInfos called")
+        withContext(Dispatchers.IO) {
             try {
+                Timber.i("Db action fetchInfos called $cityName")
                 val weatherInfoDto =
                     retrofitService.getWeatherInfos(cityName)
                 Timber.i("Db action start inserting weather")
@@ -90,7 +107,7 @@ class FetchWeatherRepository @Inject constructor(
                 dao.insertWeatherInfos(weathetInfoEntity)
                 Timber.i("Db action end inserting weather")
                 val weathetInfo = weatherInfoDto.toWeatherInfo()
-                emit(Resource.Success(weathetInfo))
+
 
             } catch (ex: HttpException) {
                 ex.printStackTrace()
@@ -103,7 +120,9 @@ class FetchWeatherRepository @Inject constructor(
                 Timber.e("An error occured during the fecth operation: ${genEx.message}")
             }
         }
+
     }
+
 
     suspend fun waitingMessage(): Flow<String> {
         var previousMessageDisplayed = ""

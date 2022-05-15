@@ -60,3 +60,23 @@ fun List<WeatherEntity>.toListOfWeather(): List<Weather> {
         )
     }
 }
+
+fun List<WeatherInfoEntity>.toListOfWeatherInfo(): List<WeatherInfo> {
+    return map {
+        WeatherInfo(
+            coord = it.coord.toCoord(),
+            weather = it.weather.toListOfWeather(),
+            base = it.base,
+            id = it.id,
+            main = it.main.toMain(),
+            visibility = it.visibility,
+            wind = it.wind.toWind(),
+            clouds = it.clouds.toClouds(),
+            dt = it.dt,
+            sys = it.sys.toSys(),
+            timezone = it.timezone,
+            name = it.name,
+            cod = it.cod
+        )
+    }
+}
