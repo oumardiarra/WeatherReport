@@ -120,7 +120,6 @@ class FetchWeatherRepository @Inject constructor(
                     retrofitService.getWeatherInfos(cityName)
                 val weathetInfoEntity = weatherInfoDto.toWeatherInfoEntity()
                 dao.insertWeatherInfos(weathetInfoEntity)
-                Timber.i("Insert success size is ${dao.getAll().size}")
 
             } catch (ex: HttpException) {
                 ex.printStackTrace()

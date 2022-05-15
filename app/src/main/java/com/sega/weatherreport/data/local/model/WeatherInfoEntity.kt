@@ -38,27 +38,7 @@ class Converters {
 
         val objects =
             Gson().fromJson(value, Array<WeatherEntity>::class.java) as Array<WeatherEntity>
-        val list = objects.toList()
-        return list
+        return objects.toList()
     }
 }
-/*{
 
-    constructor():this(
-        CoordEntity(0.0,0.0),
-        listOf(),
-        "",
-        MainEntity(0.0, 0.0,0.0,0.0,0.0,0.0),
-        0,
-        WindEntity(0.0,0),
-        CloudsEntity(0),
-        0,
-        SysEntity(0,0,"",0,0),
-        0,
-        0,
-        "",
-        0)
-
-
-
-}*/
