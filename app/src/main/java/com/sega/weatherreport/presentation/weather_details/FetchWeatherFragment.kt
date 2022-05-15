@@ -21,6 +21,7 @@ import com.google.android.material.divider.MaterialDividerItemDecoration
 import com.google.android.material.textview.MaterialTextView
 import com.sega.weatherreport.R
 import com.sega.weatherreport.databinding.FragmentFetchWeatherBinding
+import com.sega.weatherreport.domain.model.WeatherInfo
 import com.squareup.picasso.Picasso
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
@@ -42,15 +43,8 @@ class FetchWeatherFragment : Fragment() {
     ): View? {
         _binding = FragmentFetchWeatherBinding.inflate(inflater, container, false)
         val root = binding.root
-        /*binding.btnRetry.setOnClickListener {
-            binding.btnRetry.visibility = View.INVISIBLE
-            binding.linearProgressIndicator.progress = 0
-            binding.linearProgressIndicator.visibility = View.VISIBLE
-            binding.waitingMessage.visibility = View.VISIBLE
-            binding.waitingMessage.text = getString(R.string.waiting_msg_init)
-            viewModel.fetchCurrentWeather()
 
-        }*/
+
         val representativeAdapter = WeatherListAdapter()
         val recycleWeather = binding.recyclerWeather
         val divider = MaterialDividerItemDecoration(
@@ -59,11 +53,18 @@ class FetchWeatherFragment : Fragment() {
         )
         recycleWeather.adapter = representativeAdapter
         recycleWeather.addItemDecoration(divider)
+        binding.btnRetry.setOnClickListener {
+           representativeAdapter.submitList(emptyList<WeatherInfo>())
+            shouldHideProgressAndWaitingViews(false)
+            shouldHideRetryView(true)
+            viewModel.fetchCurrentWeather()
 
+        }
         lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
                     viewModel.progressIndicator.collect {
+                        binding.txtProgress.text = it.toString() + "%"
                         binding.linearProgressIndicator.progress = it
                     }
                 }
@@ -79,7 +80,10 @@ class FetchWeatherFragment : Fragment() {
                     viewModel.listOfWeather.collect {
 
                         if (it.isNotEmpty()) {
+                            shouldHideProgressAndWaitingViews(true)
+                            shouldHideRetryView(false)
                             representativeAdapter.submitList(it)
+
                         }
 
 
@@ -89,8 +93,32 @@ class FetchWeatherFragment : Fragment() {
 
             }
         }
+
         viewModel.fetchCurrentWeather()
         return root
+    }
+
+    fun shouldHideProgressAndWaitingViews(shouldHide:Boolean) {
+        if(shouldHide){
+        binding.txtProgress.visibility = View.INVISIBLE
+        binding.linearProgressIndicator.visibility = View.INVISIBLE
+        binding.waitingMessage.visibility = View.INVISIBLE
+        }
+        else{
+            binding.txtProgress.visibility = View.VISIBLE
+            binding.linearProgressIndicator.visibility = View.VISIBLE
+            binding.waitingMessage.visibility = View.VISIBLE
+        }
+    }
+    fun shouldHideRetryView(shouldHide:Boolean) {
+        if(shouldHide){
+            binding.btnRetry.visibility = View.INVISIBLE
+
+        }
+        else{
+            binding.btnRetry.visibility = View.VISIBLE
+
+        }
     }
 
 

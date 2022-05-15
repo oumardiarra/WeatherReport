@@ -37,38 +37,51 @@ class FetchWeatherRepository @Inject constructor(
             for (i in 0..totalSeconds step 10) {
                 when (i) {
                     0 -> {
-                        Timber.i("counter tick is $i and city is Paris")
-                        val progress = getProgresspercentage(i, totalSeconds)
-                        emit(Resource.Progress(progress))
-                        fetchInfos("Paris")
+                        val isFetchingDone = fetchInfos("Paris")
+                        if (isFetchingDone) {
+                            val progress = getProgresspercentage(i, totalSeconds)
+                            emit(Resource.Progress(progress))
+                        } else {
+                            emit(Resource.Error("Something went wrong"))
+                        }
                     }
                     10 -> {
-
-                        Timber.i("counter tick is $i and city is Rennes")
-                        val progress = getProgresspercentage(i, totalSeconds)
-                        emit(Resource.Progress(progress))
-                        fetchInfos("Rennes")
-
+                        val isFetchingDone = fetchInfos("Rennes")
+                        if (isFetchingDone) {
+                            val progress = getProgresspercentage(i, totalSeconds)
+                            emit(Resource.Progress(progress))
+                        } else {
+                            emit(Resource.Error("Something went wrong"))
+                        }
                     }
                     20 -> {
-
-                        Timber.i("counter tick is $i and city is Nantes")
-                        val progress = getProgresspercentage(i, totalSeconds)
-                        emit(Resource.Progress(progress))
-                        fetchInfos("Nantes")
+                        val isFetchingDone = fetchInfos("Nantes")
+                        if (isFetchingDone) {
+                            val progress = getProgresspercentage(i, totalSeconds)
+                            emit(Resource.Progress(progress))
+                        } else {
+                            emit(Resource.Error("Something went wrong"))
+                        }
                     }
                     30 -> {
-                        Timber.i("counter tick is $i and city is Bordeaux")
-                        val progress = getProgresspercentage(i, totalSeconds)
-                        emit(Resource.Progress(progress))
-                        fetchInfos("Bordeaux")
+
+                        val isFetchingDone = fetchInfos("Bordeaux")
+                        if (isFetchingDone) {
+                            val progress = getProgresspercentage(i, totalSeconds)
+                            emit(Resource.Progress(progress))
+                        } else {
+                            emit(Resource.Error("Something went wrong"))
+                        }
 
                     }
                     40 -> {
-                        Timber.i("counter tick is $i and city is Lyon")
-                        val progress = getProgresspercentage(i, totalSeconds)
-                        emit(Resource.Progress(progress))
-                        fetchInfos("Lyon")
+                        val isFetchingDone = fetchInfos("Lyon")
+                        if (isFetchingDone) {
+                            val progress = getProgresspercentage(i, totalSeconds)
+                            emit(Resource.Progress(progress))
+                        } else {
+                            emit(Resource.Error("Something went wrong"))
+                        }
 
                     }
                     50 -> {
@@ -95,32 +108,31 @@ class FetchWeatherRepository @Inject constructor(
 
     }
 
-    private suspend fun fetchInfos(cityName: String) {
-        Timber.i("Db action fetchInfos called")
+
+    private suspend fun fetchInfos(cityName: String): Boolean {
+        var isFetchingDone = true
         withContext(Dispatchers.IO) {
             try {
-                Timber.i("Db action fetchInfos called $cityName")
                 val weatherInfoDto =
                     retrofitService.getWeatherInfos(cityName)
-                Timber.i("Db action start inserting weather")
                 val weathetInfoEntity = weatherInfoDto.toWeatherInfoEntity()
                 dao.insertWeatherInfos(weathetInfoEntity)
-                Timber.i("Db action end inserting weather")
-                val weathetInfo = weatherInfoDto.toWeatherInfo()
-
 
             } catch (ex: HttpException) {
                 ex.printStackTrace()
+                isFetchingDone = false
                 Timber.e("An error occured during the fecth operation: ${ex.message()}")
             } catch (ioEx: IOException) {
                 ioEx.printStackTrace()
+                isFetchingDone = false
                 Timber.e("An error occured during the fecth operation: ${ioEx.message}")
             } catch (genEx: Exception) {
                 genEx.printStackTrace()
+                isFetchingDone = false
                 Timber.e("An error occured during the fecth operation: ${genEx.message}")
             }
         }
-
+        return isFetchingDone
     }
 
 

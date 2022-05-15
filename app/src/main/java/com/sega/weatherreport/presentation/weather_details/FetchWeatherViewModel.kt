@@ -19,14 +19,17 @@ class FetchWeatherViewModel @Inject constructor(
     private val repository: FetchWeatherRepository
 ) : ViewModel() {
 
-    private val _progressIndicator = MutableStateFlow(0)
-    private val _waitingMessage = MutableStateFlow("")
-    private val _listOfWeather = MutableStateFlow(emptyList<WeatherInfo>())
+    private var _progressIndicator = MutableStateFlow(0)
+    private var _waitingMessage = MutableStateFlow("")
+    private var _listOfWeather = MutableStateFlow(emptyList<WeatherInfo>())
+    private var _shouldDisplayView = MutableStateFlow(true)
+    val shouldDisplayView = _shouldDisplayView
     val progressIndicator = _progressIndicator
     val waitingMessage = _waitingMessage
     val listOfWeather = _listOfWeather
 
     init {
+
         getWaintingMessage()
     }
 
@@ -39,23 +42,32 @@ class FetchWeatherViewModel @Inject constructor(
                     when (it) {
                         is Resource.Success -> {
                             it.data?.let { weatherInfo ->
-                                Timber.i("Weather collected from flow ${weatherInfo.get(0).main.temp} and size ${weatherInfo.size}")
+                                Timber.e("Resource.Success ${weatherInfo.isEmpty()} ")
                                 _listOfWeather.value = weatherInfo
+                                _shouldDisplayView.value = false
                             }
                         }
                         is Resource.Progress -> {
                             it.progress?.let { progress ->
                                 _progressIndicator.value = progress
-                                Timber.i("Weather collected from flow progress ${progress}")
+
                             }
                         }
                         is Resource.Error -> {
-
+                            /* We could update the UI with a corresponding message*/
+                            Timber.e(it.message)
                         }
                     }
 
                 }
         }
+    }
+
+    fun updateViewVisibility(display: Boolean) {
+        _shouldDisplayView.value = display
+    }
+    fun reset(){
+        _progressIndicator.value=0
     }
 
     fun getWaintingMessage() {

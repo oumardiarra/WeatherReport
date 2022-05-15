@@ -4,6 +4,7 @@ package com.sega.weatherreport.di
 import android.app.Application
 import android.content.Context
 import androidx.room.Room
+import com.sega.weatherreport.R
 import com.sega.weatherreport.data.local.WeatherDatabase
 import com.sega.weatherreport.data.remote.api.WeatherApiService
 import com.sega.weatherreport.data.remote.api.WeatherApiService.Companion.BASE_URL
@@ -37,12 +38,9 @@ object AppModule {
     }
 
     @Provides
-    fun provideListOfWaitingWords(): MutableList<String> {
-        return mutableListOf(
-            "Nous téléchargeons les données…",
-            "C’est presque fini…",
-            "Plus que quelques secondes avant d’avoir le résultat…"
-        )
+    fun provideListOfWaitingWords(@ApplicationContext app: Context): List<String> {
+        val waitingMessage = app.resources.getStringArray(R.array.waitingMessage)
+        return waitingMessage.toList()
     }
 
     @Provides
