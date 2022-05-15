@@ -18,6 +18,9 @@ import timber.log.Timber
 import java.io.IOException
 import javax.inject.Inject
 
+enum class Cities {
+    PARIS, RENNES, NANTES, BORDEAUX, LYON
+}
 
 class FetchWeatherRepository @Inject constructor(
     private val retrofitService: WeatherApiService,
@@ -37,7 +40,7 @@ class FetchWeatherRepository @Inject constructor(
             for (i in 0..totalSeconds step 10) {
                 when (i) {
                     0 -> {
-                        val isFetchingDone = fetchInfos("Paris")
+                        val isFetchingDone = fetchInfos(Cities.PARIS.name)
                         if (isFetchingDone) {
                             val progress = getProgresspercentage(i, totalSeconds)
                             emit(Resource.Progress(progress))
@@ -46,7 +49,7 @@ class FetchWeatherRepository @Inject constructor(
                         }
                     }
                     10 -> {
-                        val isFetchingDone = fetchInfos("Rennes")
+                        val isFetchingDone = fetchInfos(Cities.RENNES.name)
                         if (isFetchingDone) {
                             val progress = getProgresspercentage(i, totalSeconds)
                             emit(Resource.Progress(progress))
@@ -55,7 +58,7 @@ class FetchWeatherRepository @Inject constructor(
                         }
                     }
                     20 -> {
-                        val isFetchingDone = fetchInfos("Nantes")
+                        val isFetchingDone = fetchInfos(Cities.NANTES.name)
                         if (isFetchingDone) {
                             val progress = getProgresspercentage(i, totalSeconds)
                             emit(Resource.Progress(progress))
@@ -65,7 +68,7 @@ class FetchWeatherRepository @Inject constructor(
                     }
                     30 -> {
 
-                        val isFetchingDone = fetchInfos("Bordeaux")
+                        val isFetchingDone = fetchInfos(Cities.BORDEAUX.name)
                         if (isFetchingDone) {
                             val progress = getProgresspercentage(i, totalSeconds)
                             emit(Resource.Progress(progress))
@@ -75,7 +78,7 @@ class FetchWeatherRepository @Inject constructor(
 
                     }
                     40 -> {
-                        val isFetchingDone = fetchInfos("Lyon")
+                        val isFetchingDone = fetchInfos(Cities.LYON.name)
                         if (isFetchingDone) {
                             val progress = getProgresspercentage(i, totalSeconds)
                             emit(Resource.Progress(progress))
@@ -94,7 +97,7 @@ class FetchWeatherRepository @Inject constructor(
                         val progress = getProgresspercentage(i, totalSeconds)
                         emit(Resource.Progress(progress))
                         localWeatherList?.let {
-                            emit(Resource.Success(localWeatherInfos.toListOfWeatherInfo()))
+                            emit(Resource.Success(it.toListOfWeatherInfo()))
                         }
 
                     }
@@ -117,6 +120,7 @@ class FetchWeatherRepository @Inject constructor(
                     retrofitService.getWeatherInfos(cityName)
                 val weathetInfoEntity = weatherInfoDto.toWeatherInfoEntity()
                 dao.insertWeatherInfos(weathetInfoEntity)
+                Timber.i("Insert success size is ${dao.getAll().size}")
 
             } catch (ex: HttpException) {
                 ex.printStackTrace()

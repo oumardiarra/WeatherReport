@@ -54,7 +54,8 @@ class FetchWeatherFragment : Fragment() {
         recycleWeather.adapter = representativeAdapter
         recycleWeather.addItemDecoration(divider)
         binding.btnRetry.setOnClickListener {
-           representativeAdapter.submitList(emptyList<WeatherInfo>())
+            viewModel.resetList()
+            representativeAdapter.submitList(emptyList<WeatherInfo>())
             shouldHideProgressAndWaitingViews(false)
             shouldHideRetryView(true)
             viewModel.fetchCurrentWeather()
@@ -98,24 +99,23 @@ class FetchWeatherFragment : Fragment() {
         return root
     }
 
-    fun shouldHideProgressAndWaitingViews(shouldHide:Boolean) {
-        if(shouldHide){
-        binding.txtProgress.visibility = View.INVISIBLE
-        binding.linearProgressIndicator.visibility = View.INVISIBLE
-        binding.waitingMessage.visibility = View.INVISIBLE
-        }
-        else{
+    fun shouldHideProgressAndWaitingViews(shouldHide: Boolean) {
+        if (shouldHide) {
+            binding.txtProgress.visibility = View.INVISIBLE
+            binding.linearProgressIndicator.visibility = View.INVISIBLE
+            binding.waitingMessage.visibility = View.INVISIBLE
+        } else {
             binding.txtProgress.visibility = View.VISIBLE
             binding.linearProgressIndicator.visibility = View.VISIBLE
             binding.waitingMessage.visibility = View.VISIBLE
         }
     }
-    fun shouldHideRetryView(shouldHide:Boolean) {
-        if(shouldHide){
+
+    fun shouldHideRetryView(shouldHide: Boolean) {
+        if (shouldHide) {
             binding.btnRetry.visibility = View.INVISIBLE
 
-        }
-        else{
+        } else {
             binding.btnRetry.visibility = View.VISIBLE
 
         }

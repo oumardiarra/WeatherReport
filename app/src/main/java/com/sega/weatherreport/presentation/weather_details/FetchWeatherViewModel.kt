@@ -66,8 +66,13 @@ class FetchWeatherViewModel @Inject constructor(
     fun updateViewVisibility(display: Boolean) {
         _shouldDisplayView.value = display
     }
-    fun reset(){
-        _progressIndicator.value=0
+
+    fun reset() {
+        _progressIndicator.value = 0
+    }
+
+    fun resetList() {
+        _listOfWeather.value = emptyList<WeatherInfo>()
     }
 
     fun getWaintingMessage() {
