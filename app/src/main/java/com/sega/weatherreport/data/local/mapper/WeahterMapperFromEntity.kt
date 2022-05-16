@@ -4,7 +4,7 @@ import com.sega.weatherreport.data.local.model.*
 import com.sega.weatherreport.data.remote.dto.*
 import com.sega.weatherreport.domain.model.*
 
-/* mappers from entities to domain */
+/* mappers from entities to domain models */
 fun WeatherInfoEntity.toWeatherInfo(): WeatherInfo {
     return WeatherInfo(
         coord = coord.toCoord(),

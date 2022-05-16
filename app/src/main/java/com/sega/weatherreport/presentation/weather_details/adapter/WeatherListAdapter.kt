@@ -7,12 +7,12 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.sega.weatherreport.R
 import com.sega.weatherreport.databinding.WeatherItemBinding
-import com.sega.weatherreport.databinding.WeatherItemImageBinding
+import com.sega.weatherreport.databinding.WeatherItemHeaderBinding
 import com.sega.weatherreport.domain.model.WeatherInfo
 import timber.log.Timber
 
 class WeatherListAdapter :
-    ListAdapter<WeatherInfo, WeatherListViewHolder>(WeatherListDiffCallback) {
+    ListAdapter<WeatherInfo, RecyclerView.ViewHolder>(WeatherListDiffCallback) {
 
     companion object WeatherListDiffCallback : DiffUtil.ItemCallback<WeatherInfo>() {
         override fun areItemsTheSame(oldItem: WeatherInfo, newItem: WeatherInfo): Boolean {
@@ -25,20 +25,37 @@ class WeatherListAdapter :
 
     }
 
-    /*  override fun getItemViewType(position: Int): Int {
-          Timber.i("getItemViewType value is $position")
-          return if (position == 0)
-              R.layout.weather_item_image
-          else
-              R.layout.weather_item
+    override fun getItemViewType(position: Int): Int {
+        Timber.i("getItemViewType value is $position")
+        return if (position == 0)
+            R.layout.weather_item_header
+        else
+            R.layout.weather_item
 
 
-      }*/
+    }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WeatherListViewHolder {
-        val view =
-            WeatherItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return WeatherListViewHolder(view)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        /* val view =
+             WeatherItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+         return WeatherListViewHolder(view)*/
+        return when (viewType) {
+            R.layout.weather_item_header -> {
+                val view =
+                    WeatherItemHeaderBinding.inflate(
+                        LayoutInflater.from(parent.context),
+                        parent,
+                        false
+                    )
+                WeatherListHeaderViewHolder(view)
+            }
+            R.layout.weather_item -> {
+                val view =
+                    WeatherItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+                WeatherListViewHolder(view)
+            }
+            else -> throw IllegalArgumentException("Invalid ViewType Provided")
+        }
         /*return if (viewType == 0) {
             val view =
                 WeatherItemImageBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -51,14 +68,14 @@ class WeatherListAdapter :
 
     }
 
-    override fun onBindViewHolder(holder: WeatherListViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val item = getItem(position)
-        holder.bind(item)
-        /* if (holder.itemViewType == R.layout.weather_item_image) {
-             (holder as WeatherListImageViewHolder).bind(item)
-         } else {
-             (holder as WeatherListViewHolder).bind(item)
-         }*/
+        when (holder) {
+            is WeatherListHeaderViewHolder -> holder.bind(item)
+            is WeatherListViewHolder -> holder.bind(item)
+
+        }
+
 
     }
 
@@ -70,12 +87,11 @@ class WeatherListViewHolder(val binding: WeatherItemBinding) :
         val weatherIconUrl = "https://openweathermap.org/img/w/${item.weather.get(0).icon}.png"
         item.weather.get(0).icon = weatherIconUrl
         binding.weatherInfo = item
-
         binding.executePendingBindings()
     }
 }
 
-class WeatherListImageViewHolder(val binding: WeatherItemImageBinding) :
+class WeatherListHeaderViewHolder(val binding: WeatherItemHeaderBinding) :
     RecyclerView.ViewHolder(binding.root) {
     fun bind(item: WeatherInfo) {
         binding.weatherInfo = item

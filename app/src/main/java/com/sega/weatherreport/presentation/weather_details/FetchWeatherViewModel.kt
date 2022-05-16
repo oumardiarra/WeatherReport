@@ -22,8 +22,6 @@ class FetchWeatherViewModel @Inject constructor(
     private var _progressIndicator = MutableStateFlow(0)
     private var _waitingMessage = MutableStateFlow("")
     private var _listOfWeather = MutableStateFlow(emptyList<WeatherInfo>())
-    private var _shouldDisplayView = MutableStateFlow(true)
-    val shouldDisplayView = _shouldDisplayView
     val progressIndicator = _progressIndicator
     val waitingMessage = _waitingMessage
     val listOfWeather = _listOfWeather
@@ -44,7 +42,7 @@ class FetchWeatherViewModel @Inject constructor(
                             it.data?.let { weatherInfo ->
                                 Timber.e("Resource.Success ${weatherInfo.isEmpty()} ")
                                 _listOfWeather.value = weatherInfo
-                                _shouldDisplayView.value = false
+
                             }
                         }
                         is Resource.Progress -> {
@@ -63,12 +61,11 @@ class FetchWeatherViewModel @Inject constructor(
         }
     }
 
-    fun updateViewVisibility(display: Boolean) {
-        _shouldDisplayView.value = display
-    }
+
 
     fun reset() {
         _progressIndicator.value = 0
+        resetList()
     }
 
     fun resetList() {

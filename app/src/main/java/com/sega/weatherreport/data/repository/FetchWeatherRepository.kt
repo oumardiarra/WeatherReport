@@ -4,13 +4,11 @@ package com.sega.weatherreport.data.repository
 import com.sega.weatherreport.data.local.WeatherDatabase
 import com.sega.weatherreport.data.local.mapper.toListOfWeatherInfo
 import com.sega.weatherreport.data.remote.api.WeatherApiService
-import com.sega.weatherreport.data.remote.mapper.toWeatherInfo
 import com.sega.weatherreport.data.remote.mapper.toWeatherInfoEntity
-import com.sega.weatherreport.domain.model.WeatherInfo
+import com.sega.weatherreport.domain.model.*
 import com.sega.weatherreport.util.Resource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
@@ -97,7 +95,26 @@ class FetchWeatherRepository @Inject constructor(
                         val progress = getProgresspercentage(i, totalSeconds)
                         emit(Resource.Progress(progress))
                         localWeatherList?.let {
-                            emit(Resource.Success(it.toListOfWeatherInfo()))
+                            var listInfo = it.toListOfWeatherInfo().toMutableList()
+                            // Dummy insertion at the index 0 for the header in the recycleView
+                            listInfo.add(
+                                0, WeatherInfo(
+                                    Coord(0.0, 0.0),
+                                    listOf(),
+                                    "",
+                                    Main(0.0, 0.0, 0.0, 0.0, 0.0, 0.0),
+                                    0,
+                                    Wind(0.0, 0),
+                                    Clouds(0),
+                                    0,
+                                    Sys(0, 0, "", 0, 0),
+                                    0,
+                                    0,
+                                    "",
+                                    0
+                                )
+                            )
+                            emit(Resource.Success(listInfo.toList()))
                         }
 
                     }

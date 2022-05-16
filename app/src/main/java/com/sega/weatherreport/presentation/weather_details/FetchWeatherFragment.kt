@@ -54,7 +54,7 @@ class FetchWeatherFragment : Fragment() {
         recycleWeather.adapter = representativeAdapter
         recycleWeather.addItemDecoration(divider)
         binding.btnRetry.setOnClickListener {
-            viewModel.resetList()
+            viewModel.reset()
             representativeAdapter.submitList(emptyList<WeatherInfo>())
             shouldHideProgressAndWaitingViews(false)
             shouldHideRetryView(true)
